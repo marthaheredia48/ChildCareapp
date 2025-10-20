@@ -8,17 +8,28 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @AppStorage("hasCompletedBabySetup") private var hasCompletedBabySetup = false
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("hola!")
+        NavigationStack { 
+            Group {
+                if !hasCompletedOnboarding {
+                    OnboardingView()
+                } else if !isLoggedIn {
+                    OnboardingView()
+                } else if !hasCompletedBabySetup {
+                    BabyProfileSetupView()
+                        .navigationBarBackButtonHidden(true)
+                } else {
+                    HomeView()
+                }
+            }
+            .navigationBarHidden(true)
         }
-        .padding()
     }
 }
-
 #Preview {
     ContentView()
 }

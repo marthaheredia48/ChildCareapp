@@ -392,15 +392,17 @@ struct BabyProfileSetupView: View {
     }
     
     private func completeSetup() {
-        // Aquí guardarías los datos en tu base de datos
-        print("Perfil completado:")
+        // Guardar datos del bebé
+        print("👶 Perfil completado!")
         for (index, baby) in babies.enumerated() {
-            print("Bebé \(index + 1):")
-            print("  Nombre: \(baby.name)")
-            print("  Fecha de nacimiento: \(baby.birthDate)")
-            print("  Género: \(baby.gender)")
+            print("Bebé \(index + 1): \(baby.name)")
         }
         
+        // ✅ SOLO ESTO: Guardar ANTES de mostrar animación
+        @AppStorage("hasCompletedBabySetup") var hasCompletedBabySetup = false
+        hasCompletedBabySetup = true
+        
+        // ✅ Mostrar animación BONITA
         isCompleted = true
     }
     
@@ -504,8 +506,12 @@ struct DatePickerSheet: View {
     }
 }
 
-// MARK: - Completion View (Placeholder)
+// MARK: - Completion View
 struct CompletionView: View {
+    @AppStorage("hasCompletedBabySetup") private var hasCompletedBabySetup = false
+    @State private var showAnimation = false
+    @State private var navigateToHome = false
+    
     var body: some View {
         ZStack {
             Color(red: 0.93, green: 0.6, blue: 0.73)
@@ -515,20 +521,51 @@ struct CompletionView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 80))
                     .foregroundColor(.white)
+                    .scaleEffect(showAnimation ? 1.0 : 0.5)
+                    .opacity(showAnimation ? 1.0 : 0.0)
                 
                 Text("¡Todo listo!")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
+                    .offset(y: showAnimation ? 0 : 20)
+                    .opacity(showAnimation ? 1.0 : 0.0)
                 
                 Text("Tu perfil ha sido creado exitosamente")
                     .font(.system(size: 16))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+                    .offset(y: showAnimation ? 0 : 20)
+                    .opacity(showAnimation ? 1.0 : 0.0)
+                
+                Button(action: {
+                    // Asegurar que el estado está guardado
+                    hasCompletedBabySetup = true
+                    // Navegar a HomeView
+                    navigateToHome = true
+                }) {
+                    Text("Comenzar")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
+                        .frame(width: 200)
+                        .frame(height: 52)
+                        .background(Color.white)
+                        .cornerRadius(12)
+                }
+                .offset(y: showAnimation ? 0 : 20)
+                .opacity(showAnimation ? 1.0 : 0.0)
+                .padding(.top, 20)
             }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
+                showAnimation = true
+            }
+        }
+        .fullScreenCover(isPresented: $navigateToHome) {
+            HomeView()
         }
     }
 }
-
 #Preview {
     BabyProfileSetupView()
 }
