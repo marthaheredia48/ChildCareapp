@@ -17,6 +17,7 @@ struct AuthView: View {
     @State private var name = ""
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var showBabyProfileSetup = false // 👈 NUEVO
     
     // Inicializador que permite especificar si mostrar login o registro
     init(startWithLogin: Bool = true) {
@@ -223,6 +224,10 @@ struct AuthView: View {
         } message: {
             Text(alertMessage)
         }
+        // 👇 AQUÍ SE CONECTA CON BabyProfileSetupView
+        .fullScreenCover(isPresented: $showBabyProfileSetup) {
+            BabyProfileSetupView()
+        }
     }
     
     // MARK: - Funciones de validación y acciones
@@ -254,9 +259,14 @@ struct AuthView: View {
         print("Email: \(email)")
         print("Password: \(password)")
         
-        // Ejemplo de éxito
+        // 👇 PARA LOGIN: Si el usuario ya existe, ir directo al Home
+        // Si es nuevo usuario, ir a BabyProfileSetup
+        // Por ahora, simulamos que ya tiene perfil configurado
         alertMessage = "Inicio de sesión exitoso"
         showingAlert = true
+        
+        // TODO: Aquí irías directo al HomeView/Dashboard
+        // porque el usuario ya tiene perfil configurado
     }
     
     private func handleSignUp() {
@@ -297,15 +307,46 @@ struct AuthView: View {
             return
         }
         
-        // Aquí va tu lógica de Firebase o backend
+        // 👇 AQUÍ VA TU LÓGICA DE FIREBASE O BACKEND
         print("Registrar usuario:")
         print("Nombre: \(name)")
         print("Email: \(email)")
         print("Password: \(password)")
         
-        // Ejemplo de éxito
-        alertMessage = "Cuenta creada exitosamente"
-        showingAlert = true
+        // 🎯 DESPUÉS DE CREAR LA CUENTA EXITOSAMENTE:
+        // Simular un pequeño delay como si estuviera registrando
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // Navegar a BabyProfileSetupView
+            showBabyProfileSetup = true
+        }
+        
+        /*
+         En tu implementación real con Firebase sería algo así:
+         
+         Auth.auth().createUser(withEmail: email, password: password) { result, error in
+             if let error = error {
+                 alertMessage = error.localizedDescription
+                 showingAlert = true
+                 return
+             }
+             
+             // Usuario creado exitosamente
+             // Guardar el nombre en Firestore
+             if let user = result?.user {
+                 let db = Firestore.firestore()
+                 db.collection("users").document(user.uid).setData([
+                     "name": name,
+                     "email": email,
+                     "createdAt": Timestamp()
+                 ]) { error in
+                     if error == nil {
+                         // Todo exitoso, ir a configurar perfil del bebé
+                         showBabyProfileSetup = true
+                     }
+                 }
+             }
+         }
+         */
     }
     
     private func handleAppleSignIn() {
@@ -313,6 +354,9 @@ struct AuthView: View {
         print("Iniciar sesión con Apple")
         alertMessage = "Función de Apple Sign In - Implementar con AuthenticationServices"
         showingAlert = true
+        
+        // Después de autenticar con Apple exitosamente:
+        // showBabyProfileSetup = true
     }
     
     private func handleGoogleSignIn() {
@@ -320,6 +364,9 @@ struct AuthView: View {
         print("Iniciar sesión con Google")
         alertMessage = "Función de Google Sign In - Implementar con GoogleSignIn SDK"
         showingAlert = true
+        
+        // Después de autenticar con Google exitosamente:
+        // showBabyProfileSetup = true
     }
     
     private func clearFields() {
