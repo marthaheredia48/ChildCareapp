@@ -128,8 +128,8 @@ struct HomeContentView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         // Header
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
+                        HStack  {
+                            VStack(alignment: .leading, spacing: 10) {
                                 Text("¡Buenos días!")
                                     .font(.system(size: 27, weight: .bold))
                                     .foregroundColor(.black)
@@ -192,7 +192,7 @@ struct HomeContentView: View {
                         // 🌼 Tarjeta de vacuna
                         VStack(spacing: 16) {
                             Text("Próxima vacuna")
-                                .font(.system(size: 18, weight: .semibold))
+                                .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(.black)
                                 .frame(maxWidth: .infinity, alignment: .center)
                             
@@ -203,12 +203,12 @@ struct HomeContentView: View {
                             )
                         }
                         .padding(.horizontal, 20)
-                        .padding(.top, 20)
+                        .padding(.top, 10)
                         
                         
                         // Mis consejos diarios (estilo historias de Instagram)
                                                VStack(alignment: .leading, spacing: 16) {
-                                                   Text("Mis consejos diarios · hoy")
+                                                   Text("Mis consejos diarios")
                                                        .font(.system(size: 20, weight: .bold))
                                                        .foregroundColor(.black)
                                                        .padding(.horizontal, 20)
@@ -1068,8 +1068,8 @@ struct DailyTipsStoriesView: View {
             title: "Depresión posparto",
        //     shortDescription: "Busca apoyo",
             image: "heart.text.square.fill",
-            backgroundColor: Color(red: 0.90, green: 0.78, blue: 0.88), // lila-rosado suave
-            borderColor: Color(red: 0.93, green: 0.6, blue: 0.73),
+            backgroundColor: Color(red: 0.80, green: 0.60, blue: 0.85), // lila más intenso
+            borderColor: Color(red: 0.75, green: 0.45, blue: 0.70), // borde lila más oscuro
             fullContent: "La depresión posparto es más común de lo que parece. No estás sola.\n\nSíntomas frecuentes:\n\n• Tristeza o irritabilidad constante\n• Fatiga extrema o falta de energía\n• Dificultad para vincularte con tu bebé\n• Cambios en el apetito o el sueño\n\nHabla con un profesional de la salud mental o con tu médico si sientes estos síntomas. Pedir ayuda es importante. 💜"
         ),
         DailyTip(
