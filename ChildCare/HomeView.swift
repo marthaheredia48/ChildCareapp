@@ -124,7 +124,7 @@ struct HomeContentView: View {
                 }
                 .ignoresSafeArea()
                 
-                // 🌷 CONTENIDO
+          
                 ScrollView {
                     VStack(spacing: 24) {
                         // Header
@@ -1227,19 +1227,7 @@ struct StoryDetailView: View {
 }
 
 
-struct DiaryView: View {
-    @Binding var selectedBaby: Baby?
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                Text("Diario de \(selectedBaby?.name ?? "Bebé")")
-                    .font(.title)
-            }
-            .navigationTitle("Diario")
-        }
-    }
-}
+
 
 struct LearnView: View {
     var body: some View {
