@@ -9,6 +9,7 @@ import SwiftUI
 import Charts
 import PDFKit
 import EventKit
+import UserNotifications
 
 // MARK: - DIARIO DE SALUD PRINCIPAL
 struct DiaryView: View {

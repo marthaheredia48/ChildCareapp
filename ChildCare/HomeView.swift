@@ -762,7 +762,7 @@ struct HabitRegistrationSheet: View {
                             HStack(spacing: 10) {
                                
                                 Text("Cambiar hora: ")
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(.gray)
                                 DatePicker(
                                     "",
@@ -771,21 +771,11 @@ struct HabitRegistrationSheet: View {
                                 )
                                 .labelsHidden()
                                 .datePickerStyle(.compact)
-                                .tint(Color.pink)
+                                .tint(Color.pink.opacity(0.8))
                                 .padding(.vertical, 8)
                             }
                             .padding(.horizontal, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 0)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.white.opacity(0.8), Color.white.opacity(0.5)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .shadow(color: Color.pink.opacity(0.2), radius: 6, x: 0, y: 3)
-                            )
+                            .padding(.bottom, 5)
                         }
 
 
