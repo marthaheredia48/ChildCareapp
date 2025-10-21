@@ -29,9 +29,22 @@
 		0657E2062EA531C9006C923F /* ChildCareUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChildCareUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0657C0D42EA7458400B89CD6 /* Exceptions for "ChildCare" folder in "ChildCare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0657E1EE2EA531C6006C923F /* ChildCare */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0657E1F12EA531C6006C923F /* ChildCare */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0657C0D42EA7458400B89CD6 /* Exceptions for "ChildCare" folder in "ChildCare" target */,
+			);
 			path = ChildCare;
 			sourceTree = "<group>";
 		};
@@ -400,6 +413,11 @@
 				DEVELOPMENT_TEAM = P2B8GBB5KP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChildCare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "ChildCare necesita acceso a tu calendario para agendar citas médicas del bebé";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "ChildCare necesita acceso a tu calendario para agendar citas médicas";
 				INFOPLIST_KEY_NSCameraUsageDescription = "La app necesita acceso a la cámara para escanear la cartilla de vacunación de tu bebé y mantener un respaldo digital seguro.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "La app necesita guardar las imágenes escaneadas en tu galería para que tengas un respaldo de la cartilla.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -434,6 +452,11 @@
 				DEVELOPMENT_TEAM = P2B8GBB5KP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChildCare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "ChildCare necesita acceso a tu calendario para agendar citas médicas del bebé";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "ChildCare necesita acceso a tu calendario para agendar citas médicas";
 				INFOPLIST_KEY_NSCameraUsageDescription = "La app necesita acceso a la cámara para escanear la cartilla de vacunación de tu bebé y mantener un respaldo digital seguro.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "La app necesita guardar las imágenes escaneadas en tu galería para que tengas un respaldo de la cartilla.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

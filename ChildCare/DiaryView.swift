@@ -8,14 +8,16 @@
 import SwiftUI
 import Charts
 import PDFKit
+import EventKit
 
-// MARK: - 📔 DIARIO DE SALUD PRINCIPAL
+// MARK: - DIARIO DE SALUD PRINCIPAL
 struct DiaryView: View {
     @Binding var selectedBaby: Baby?
     @State private var selectedDate = Date()
     @State private var selectedTab = 0
     @State private var showExportSheet = false
     @State private var showMedicalAlert = false
+    @State private var showAppointmentSheet = false
     @State private var medicalAlertMessage = ""
     
     var body: some View {
@@ -51,18 +53,17 @@ struct DiaryView: View {
                             
                             // Gráfica de evolución
                             SymptomsChartViewReal()
-                                    .padding(.horizontal, 20)
-                                    .padding(.top, 20)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 20)
                         } else {
                             // Hábitos del día
-                            HabitsDayTrackerView(date: selectedDate)
+                            HabitsDayTrackerViewUpdated(date: selectedDate)
                                 .padding(.horizontal, 20)
                             
                             // Gráfica de evolución
                             HabitsChartViewReal()
                                 .padding(.horizontal, 20)
                                 .padding(.top, 20)
-
                         }
                         
                         // 📊 Botón exportar PDF (Premium)
@@ -93,62 +94,22 @@ struct DiaryView: View {
         .alert("⚠️ Alerta Médica", isPresented: $showMedicalAlert) {
             Button("Entendido", role: .cancel) { }
             Button("Agendar cita", role: .none) {
-                // TODO: Navegar a calendario de citas
+                showAppointmentSheet = true // 🔥 ABRIR EL SHEET
             }
         } message: {
             Text(medicalAlertMessage)
         }
+        .sheet(isPresented: $showAppointmentSheet) {
+            ScheduleAppointmentSheet(alertMessage: medicalAlertMessage) // 🔥 MOSTRAR EL SHEET
+        }
         .onAppear {
             checkMedicalAlerts()
+            requestCalendarAccess() // 🔥 SOLICITAR PERMISOS AL INICIAR
         }
     }
     
     // MARK: - Verificar alertas médicas
     private func checkMedicalAlerts() {
-        // TODO: Verificar síntomas recurrentes en Firebase
-        // Ejemplo de lógica:
-        /*
-        let db = Firestore.firestore()
-        let userId = Auth.auth().currentUser?.uid ?? ""
-        let babyId = selectedBaby?.id ?? ""
-        
-        // Obtener síntomas de los últimos 3 días
-        let threeDaysAgo = Calendar.current.date(byAdding: .day, value: -3, to: Date())!
-        
-        db.collection("users").document(userId)
-            .collection("babies").document(babyId)
-            .collection("symptoms")
-            .whereField("date", isGreaterThan: Timestamp(date: threeDaysAgo))
-            .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents else { return }
-                
-                var symptomCount: [String: Int] = [:]
-                for doc in documents {
-                    if let symptoms = doc.data()["symptoms"] as? [String] {
-                        for symptom in symptoms {
-                            symptomCount[symptom, default: 0] += 1
-                        }
-                    }
-                }
-                
-                // Verificar síntomas críticos
-                if let fiebreCount = symptomCount["fiebre"], fiebreCount >= 2 {
-                    medicalAlertMessage = "Tu bebé ha tenido fiebre durante \(fiebreCount) días. Considera consultar con el pediatra."
-                    showMedicalAlert = true
-                }
-                
-                if let vomitoCount = symptomCount["vomito"], vomitoCount >= 2 {
-                    medicalAlertMessage = "Tu bebé ha presentado vómito durante \(vomitoCount) días seguidos. Es recomendable acudir al médico."
-                    showMedicalAlert = true
-                }
-                
-                if let diarreaCount = symptomCount["diarrea"], diarreaCount >= 3 {
-                    medicalAlertMessage = "Se ha registrado diarrea durante \(diarreaCount) días. Mantén a tu bebé hidratado y consulta al pediatra."
-                    showMedicalAlert = true
-                }
-            }
-        */
-        
         // Simulación para demo
         let mockSymptoms = ["fiebre": 2, "vomito": 1]
         if let fiebreCount = mockSymptoms["fiebre"], fiebreCount >= 2 {
@@ -156,7 +117,21 @@ struct DiaryView: View {
             showMedicalAlert = true
         }
     }
+    
+
+    private func requestCalendarAccess() {
+        let eventStore = EKEventStore()
+        eventStore.requestFullAccessToEvents { granted, error in
+            if !granted {
+                DispatchQueue.main.async {
+                    print("⚠️ Necesitas dar permisos de acceso al calendario en Configuración")
+                }
+            }
+        }
+    }
 }
+    
+
 
 // MARK: - 📅 Selector de Fecha
 struct DateSelectorView: View {
@@ -357,12 +332,12 @@ struct SymptomRowView: View {
 }
 
 // MARK: - 📊 Tracker de Hábitos del Día
-struct HabitsDayTrackerView: View {
+struct HabitsDayTrackerViewUpdated: View {
     let date: Date
     @State private var todayHabits: [HabitRecord] = [
         HabitRecord(habitId: "alimentacion", value: "120", time: Date(), notes: "Tomó todo el biberón"),
         HabitRecord(habitId: "sueno", value: "2.5", time: Date(), notes: "Siesta tranquila")
-    ] // TODO: Cargar de Firebase
+    ]
     @State private var showEditSheet = false
     
     var body: some View {
@@ -374,14 +349,13 @@ struct HabitsDayTrackerView: View {
                 
                 Spacer()
                 
-                if Calendar.current.isDateInToday(date) {
-                    Button(action: {
-                        showEditSheet = true
-                    }) {
-                        Text("Editar")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
-                    }
+                // AHORA SIEMPRE MUESTRA EL BOTÓN (no solo para hoy)
+                Button(action: {
+                    showEditSheet = true
+                }) {
+                    Text("Editar")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
                 }
             }
             
@@ -399,6 +373,10 @@ struct HabitsDayTrackerView: View {
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8)
+        .sheet(isPresented: $showEditSheet) {
+            // ✅ AHORA USA EL NUEVO SHEET
+            EditHabitsSheet(habits: $todayHabits, date: date)
+        }
     }
 }
 
@@ -1159,63 +1137,490 @@ struct StatBox: View {
 }
 
 
-
-
-// MARK: - 🔔 SISTEMA DE ALERTAS MÉDICAS
-
-extension DiaryView {
-    // Estructura para definir reglas de alertas
-    struct MedicalAlertRule {
-        let symptomId: String
-        let daysThreshold: Int
-        let severity: AlertSeverity
-        let message: String
+// MARK: - ✏️ SHEET PARA EDITAR HÁBITOS
+struct EditHabitsSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var habits: [HabitRecord]
+    let date: Date
+    
+    @State private var feeding: String = ""
+    @State private var feedingNotes: String = ""
+    @State private var sleep: String = ""
+    @State private var sleepNotes: String = ""
+    @State private var diapers: String = ""
+    @State private var diapersNotes: String = ""
+    
+    init(habits: Binding<[HabitRecord]>, date: Date) {
+        self._habits = habits
+        self.date = date
         
-        enum AlertSeverity {
-            case warning, urgent, critical
-            
-            var color: Color {
-                switch self {
-                case .warning: return .orange
-                case .urgent: return Color(red: 1.0, green: 0.6, blue: 0.6)
-                case .critical: return .red
+        // Cargar datos existentes
+        let existingHabits = habits.wrappedValue
+        _feeding = State(initialValue: existingHabits.first(where: { $0.habitId == "alimentacion" })?.value ?? "")
+        _feedingNotes = State(initialValue: existingHabits.first(where: { $0.habitId == "alimentacion" })?.notes ?? "")
+        _sleep = State(initialValue: existingHabits.first(where: { $0.habitId == "sueno" })?.value ?? "")
+        _sleepNotes = State(initialValue: existingHabits.first(where: { $0.habitId == "sueno" })?.notes ?? "")
+        _diapers = State(initialValue: existingHabits.first(where: { $0.habitId == "panal" })?.value ?? "")
+        _diapersNotes = State(initialValue: existingHabits.first(where: { $0.habitId == "panal" })?.notes ?? "")
+    }
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color(red: 1.0, green: 0.98, blue: 0.99).ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Información de fecha
+                        VStack(spacing: 8) {
+                            Text("Editar hábitos del")
+                                .font(.system(size: 14))
+                                .foregroundColor(.gray)
+                            
+                            Text(formatDate(date))
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.black)
+                        }
+                        .padding(.top, 20)
+                        
+                        // 🍼 ALIMENTACIÓN
+                        HabitInputCard(
+                            icon: "fork.knife",
+                            title: "Alimentación",
+                            color: Color(red: 1.0, green: 0.75, blue: 0.85),
+                            value: $feeding,
+                            notes: $feedingNotes,
+                            placeholder: "120",
+                            unit: "ml",
+                            keyboardType: .numberPad
+                        )
+                        
+                        // 😴 SUEÑO
+                        HabitInputCard(
+                            icon: "moon.zzz.fill",
+                            title: "Sueño",
+                            color: Color(red: 0.85, green: 0.82, blue: 0.95),
+                            value: $sleep,
+                            notes: $sleepNotes,
+                            placeholder: "8.5",
+                            unit: "horas",
+                            keyboardType: .decimalPad
+                        )
+                        
+                        // 👶 PAÑALES
+                        HabitInputCard(
+                            icon: "water.waves",
+                            title: "Cambios de pañal",
+                            color: Color(red: 0.75, green: 0.85, blue: 1.0),
+                            value: $diapers,
+                            notes: $diapersNotes,
+                            placeholder: "6",
+                            unit: "cambios",
+                            keyboardType: .numberPad
+                        )
+                        
+                        // Botón guardar
+                        Button(action: {
+                            saveChanges()
+                        }) {
+                            Text("Guardar cambios")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 0.93, green: 0.6, blue: 0.73),
+                                            Color(red: 0.85, green: 0.7, blue: 1.0)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(16)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 40)
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+            .navigationTitle("Editar hábitos")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancelar") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
                 }
             }
         }
     }
     
-    // Reglas de alertas médicas
-    static let alertRules: [MedicalAlertRule] = [
-        MedicalAlertRule(
-            symptomId: "fiebre",
-            daysThreshold: 2,
-            severity: .urgent,
-            message: "🌡️ Fiebre persistente detectada\n\n📋 Tu bebé ha tenido fiebre durante 2 días consecutivos. Si la temperatura supera los 38°C o el bebé muestra signos de malestar, consulta al pediatra inmediatamente."
-        ),
-        MedicalAlertRule(
-            symptomId: "vomito",
-            daysThreshold: 2,
-            severity: .urgent,
-            message: "🤢 Vómito recurrente\n\n⚠️ Se ha registrado vómito durante 2 días seguidos. Mantén al bebé hidratado con pequeñas cantidades de líquido frecuentemente. Si continúa, acude al médico."
-        ),
-        MedicalAlertRule(
-            symptomId: "diarrea",
-            daysThreshold: 3,
-            severity: .warning,
-            message: "💧 Diarrea prolongada\n\n💡 La diarrea ha persistido por 3 días. Asegúrate de que el bebé se mantenga bien hidratado. Si notas signos de deshidratación (boca seca, menos pañales mojados), consulta urgentemente."
-        ),
-        MedicalAlertRule(
-            symptomId: "irritable",
-            daysThreshold: 4,
-            severity: .warning,
-            message: "😢 Irritabilidad constante\n\n📋 El bebé ha estado irritable por varios días. Esto podría indicar malestar o dolor. Considera una revisión médica para descartar otras causas."
-        ),
-        MedicalAlertRule(
-            symptomId: "sarpullido",
-            daysThreshold: 3,
-            severity: .warning,
-            message: "🔴 Sarpullido persistente\n\n⚠️ El sarpullido ha durado más de 3 días. Si se extiende, tiene pus, o el bebé tiene fiebre, consulta al pediatra."
-        )
-    ]
+    private func saveChanges() {
+        var newHabits: [HabitRecord] = []
+        
+        // Alimentación
+        if !feeding.isEmpty {
+            newHabits.append(HabitRecord(
+                habitId: "alimentacion",
+                value: feeding,
+                time: date,
+                notes: feedingNotes
+            ))
+        }
+        
+        // Sueño
+        if !sleep.isEmpty {
+            newHabits.append(HabitRecord(
+                habitId: "sueno",
+                value: sleep,
+                time: date,
+                notes: sleepNotes
+            ))
+        }
+        
+        // Pañales
+        if !diapers.isEmpty {
+            newHabits.append(HabitRecord(
+                habitId: "panal",
+                value: diapers,
+                time: date,
+                notes: diapersNotes
+            ))
+        }
+        
+        habits = newHabits
+        
+        // TODO: Guardar en Firebase (similar a síntomas)
+        
+        dismiss()
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "es_ES")
+        formatter.dateFormat = "d 'de' MMMM, yyyy"
+        return formatter.string(from: date).capitalized
+    }
+}
+
+// MARK: - 📝 TARJETA DE INPUT PARA HÁBITO
+struct HabitInputCard: View {
+    let icon: String
+    let title: String
+    let color: Color
+    @Binding var value: String
+    @Binding var notes: String
+    let placeholder: String
+    let unit: String
+    let keyboardType: UIKeyboardType
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header con icono
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.2))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 20))
+                        .foregroundColor(color)
+                }
+                
+                Text(title)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.black)
+            }
+            
+            // Input de valor
+            HStack {
+                TextField(placeholder, text: $value)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(.black)
+                    .keyboardType(keyboardType)
+                    .multilineTextAlignment(.leading)
+                
+                Text(unit)
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+            }
+            .padding()
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+            
+            // Input de notas
+            TextField("Notas opcionales", text: $notes)
+                .font(.system(size: 14))
+                .foregroundColor(.gray)
+                .padding()
+                .background(Color.gray.opacity(0.05))
+                .cornerRadius(12)
+        }
+        .padding(20)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8)
+    }
+}
+
+// MARK: - SHEET PARA AGENDAR CITA MÉDICA
+
+struct ScheduleAppointmentSheet: View {
+    @Environment(\.dismiss) var dismiss
+    let alertMessage: String
+    
+    @State private var selectedDate = Date()
+    @State private var selectedTime = Date()
+    @State private var doctorName: String = ""
+    @State private var notes: String = ""
+    @State private var showSuccessAlert = false
+    @State private var showErrorAlert = false
+    @State private var errorMessage = ""
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color(red: 1.0, green: 0.98, blue: 0.99).ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Icono y título
+                        VStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(red: 0.93, green: 0.6, blue: 0.73).opacity(0.2))
+                                    .frame(width: 80, height: 80)
+                                
+                                Image(systemName: "calendar.badge.plus")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
+                            }
+                            
+                            Text("Agendar Cita Médica")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.black)
+                        }
+                        .padding(.top, 20)
+                        
+                        // Mensaje de alerta
+                        if !alertMessage.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(.orange)
+                                    Text("Motivo de la cita")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.black)
+                                }
+                                
+                                Text(alertMessage)
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.gray)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(16)
+                            .background(Color.orange.opacity(0.1))
+                            .cornerRadius(12)
+                            .padding(.horizontal, 20)
+                        }
+                        
+                        VStack(spacing: 20) {
+                            // 📅 FECHA
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Fecha de la cita", systemImage: "calendar")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.black)
+                                
+                                DatePicker(
+                                    "",
+                                    selection: $selectedDate,
+                                    in: Date()...,
+                                    displayedComponents: .date
+                                )
+                                .datePickerStyle(.graphical)
+                                .accentColor(Color(red: 0.93, green: 0.6, blue: 0.73))
+                            }
+                            .padding(20)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 8)
+                            
+                            // ⏰ HORA
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Hora de la cita", systemImage: "clock")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.black)
+                                
+                                DatePicker(
+                                    "",
+                                    selection: $selectedTime,
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .datePickerStyle(.wheel)
+                                .labelsHidden()
+                            }
+                            .padding(20)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 8)
+                            
+                            // 👨‍⚕️ NOMBRE DEL DOCTOR
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Nombre del pediatra", systemImage: "person.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.black)
+                                
+                                TextField("Dr. García", text: $doctorName)
+                                    .font(.system(size: 16))
+                                    .padding()
+                                    .background(Color.gray.opacity(0.05))
+                                    .cornerRadius(12)
+                            }
+                            .padding(20)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 8)
+                            
+                            // 📝 NOTAS
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Notas adicionales", systemImage: "note.text")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.black)
+                                
+                                TextEditor(text: $notes)
+                                    .font(.system(size: 14))
+                                    .frame(height: 100)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.05))
+                                    .cornerRadius(12)
+                            }
+                            .padding(20)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 8)
+                        }
+                        .padding(.horizontal, 20)
+                        
+                        // Botón agendar
+                        Button(action: {
+                            scheduleAppointment()
+                        }) {
+                            HStack {
+                                Image(systemName: "calendar.badge.plus")
+                                    .font(.system(size: 18))
+                                Text("Agregar al Calendario")
+                                    .font(.system(size: 17, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 0.93, green: 0.6, blue: 0.73),
+                                        Color(red: 0.85, green: 0.7, blue: 1.0)
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(16)
+                            .shadow(color: Color(red: 0.93, green: 0.6, blue: 0.73).opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
+                    }
+                }
+            }
+            .navigationTitle("Agendar Cita")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancelar") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(red: 0.93, green: 0.6, blue: 0.73))
+                }
+            }
+        }
+        .alert("✅ Cita Agendada", isPresented: $showSuccessAlert) {
+            Button("Entendido", role: .cancel) {
+                dismiss()
+            }
+        } message: {
+            Text("La cita médica se ha agregado exitosamente a tu calendario.")
+        }
+        .alert("❌ Error", isPresented: $showErrorAlert) {
+            Button("Entendido", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
+    }
+    
+    private func scheduleAppointment() {
+        // Combinar fecha y hora
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: selectedDate)
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: selectedTime)
+        
+        var finalComponents = DateComponents()
+        finalComponents.year = dateComponents.year
+        finalComponents.month = dateComponents.month
+        finalComponents.day = dateComponents.day
+        finalComponents.hour = timeComponents.hour
+        finalComponents.minute = timeComponents.minute
+        
+        guard let appointmentDate = calendar.date(from: finalComponents) else {
+            errorMessage = "Error al procesar la fecha"
+            showErrorAlert = true
+            return
+        }
+        
+        // Solicitar acceso al calendario
+        let eventStore = EKEventStore()
+        
+        eventStore.requestFullAccessToEvents { granted, error in
+            if granted && error == nil {
+                // Crear evento
+                let event = EKEvent(eventStore: eventStore)
+                event.title = "Cita con \(doctorName.isEmpty ? "Pediatra" : doctorName)"
+                event.startDate = appointmentDate
+                event.endDate = calendar.date(byAdding: .hour, value: 1, to: appointmentDate)
+                event.notes = """
+                Motivo: \(alertMessage)
+                
+                \(notes.isEmpty ? "" : "Notas: \(notes)")
+                
+                Creado desde ChildCare App
+                """
+                event.calendar = eventStore.defaultCalendarForNewEvents
+                event.addAlarm(EKAlarm(relativeOffset: -3600)) // 1 hora antes
+                event.addAlarm(EKAlarm(relativeOffset: -86400)) // 1 día antes
+                
+                do {
+                    try eventStore.save(event, span: .thisEvent)
+                    DispatchQueue.main.async {
+                        showSuccessAlert = true
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        errorMessage = "No se pudo guardar el evento: \(error.localizedDescription)"
+                        showErrorAlert = true
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    errorMessage = "Necesitas dar permisos de acceso al calendario en Configuración"
+                    showErrorAlert = true
+                }
+            }
+        }
+    }
 }
 
