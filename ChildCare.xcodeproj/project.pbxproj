@@ -400,6 +400,8 @@
 				DEVELOPMENT_TEAM = P2B8GBB5KP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "La app necesita acceso a la cámara para escanear la cartilla de vacunación de tu bebé y mantener un respaldo digital seguro.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "La app necesita guardar las imágenes escaneadas en tu galería para que tengas un respaldo de la cartilla.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -432,6 +434,8 @@
 				DEVELOPMENT_TEAM = P2B8GBB5KP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "La app necesita acceso a la cámara para escanear la cartilla de vacunación de tu bebé y mantener un respaldo digital seguro.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "La app necesita guardar las imágenes escaneadas en tu galería para que tengas un respaldo de la cartilla.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -350,7 +350,7 @@ struct BabyProfileSetupView: View {
             .padding(.top, 10)
         }
         .sheet(isPresented: $showingDatePicker) {
-            DatePickerSheet(selectedDate: $tempDate, onDone: {
+            DatePickerSheet1(selectedDate: $tempDate, onDone: {
                 babies[currentBabyIndex].birthDate = tempDate
                 showingDatePicker = false
             })
@@ -473,7 +473,7 @@ struct GenderButton: View {
 }
 
 // MARK: - Date Picker Sheet
-struct DatePickerSheet: View {
+struct DatePickerSheet1: View {
     @Environment(\.dismiss) var dismiss
     @Binding var selectedDate: Date
     let onDone: () -> Void
