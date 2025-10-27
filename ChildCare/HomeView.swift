@@ -1231,17 +1231,7 @@ struct LearnView: View {
     }
 }
 
-struct ProfileView: View {
-    var body: some View {
-        NavigationView {
-            VStack {
-                Text("Perfil del usuario")
-                    .font(.title)
-            }
-            .navigationTitle("Perfil")
-        }
-    }
-}
+
 
 #Preview {
     HomeView()
